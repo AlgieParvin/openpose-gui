@@ -1,40 +1,8 @@
 import sys
 from PyQt5 import QtWidgets, QtGui
-from PyQt5.QtCore import QThread, pyqtSignal
 
 import design
-from mod_run_video import VideoProcesser
-
-
-class VideoProcesserThread(QThread):
-
-    error_signal = pyqtSignal(Exception)
-
-    def __init__(self, input, output, has_background, model):
-        QThread.__init__(self)
-        self.input = input
-        self.output = output
-        self.has_background = has_background
-        self.model = model
-
-    def __del__(self):
-        self.wait()
-
-    def _process(self):
-        try:
-            processer = VideoProcesser(
-                self.input, 
-                self.output, 
-                model=self.model, 
-                show_bg=self.has_background
-            )
-            processer.run()
-        except Exception as e:
-            self.error_signal.emit(e)
-
-    def run(self):
-        self._process()
-
+from processing import VideoProcesserThread
 
 
 class OpenposeApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
@@ -46,14 +14,15 @@ class OpenposeApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         self.input_button.clicked.connect(self.browse_input_file)
         self.output_button.clicked.connect(self.browse_output_file)
         self.ok_button.clicked.connect(self.process_video)
+        self.cancel_button.clicked.connect(self.cancel_processing)
 
-    def isValid(self, input, output, background, model):
+    def is_valid(self, input, output, background, model):
         return True
 
     def on_done(self):
         mbox = QtWidgets.QMessageBox()
         mbox.setIcon(QtWidgets.QMessageBox.Information)
-        mbox.setWindowTitle('Готово!')
+        mbox.setWindowTitle('Openpose')
         mbox.setText('Видео успешно обработано')
         mbox.setStandardButtons(QtWidgets.QMessageBox.Ok)
         mbox.show()
@@ -62,11 +31,24 @@ class OpenposeApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
     def on_error(self, e):
         mbox = QtWidgets.QMessageBox()
         mbox.setIcon(QtWidgets.QMessageBox.Critical)
-        mbox.setWindowTitle('Ошибка')
+        mbox.setWindowTitle('Openpose')
         mbox.setText(str(e))
         mbox.setStandardButtons(QtWidgets.QMessageBox.Close)
         mbox.show()
         mbox.exec_()
+
+    def on_interrupted(self):
+        mbox = QtWidgets.QMessageBox()
+        mbox.setIcon(QtWidgets.QMessageBox.Warning)
+        mbox.setWindowTitle('Openpose')
+        mbox.setText("Обработка видео прервана пользователем")
+        mbox.setStandardButtons(QtWidgets.QMessageBox.Close)
+        mbox.show()
+        mbox.exec_()
+
+    def cancel_processing(self):
+        if self.process_thread:
+            self.process_thread.is_active = False
 
     def browse_input_file(self):
         file = QtWidgets.QFileDialog.getOpenFileName(self, "Выберите видеофайл")
@@ -84,18 +66,21 @@ class OpenposeApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         has_background = not self.dark_bg_check_box.isChecked()
         model = str(self.model_combo_box.currentText())
 
-        if not self.isValid(input, output, has_background, model):
+        if not self.is_valid(input, output, has_background, model):
             return
 
         self.process_thread = VideoProcesserThread(
-            input,
-            output,
-            has_background,
-            model
+            video_path=input,
+            output_video=output,
+            model=model,
+            show_bg=has_background
         )
         self.process_thread.error_signal.connect(self.on_error)
-        self.process_thread.finished.connect(self.on_done)
+        self.process_thread.finish_signal.connect(self.on_done)
+        self.process_thread.interrupted_signal.connect(self.on_interrupted)
         self.process_thread.start()
+
+        self.cancel_button.setEnabled(True)
 
 
 def main():
@@ -103,6 +88,7 @@ def main():
     window = OpenposeApp()
     window.show()
     app.exec_()
+
 
 if __name__ == '__main__':
     main()

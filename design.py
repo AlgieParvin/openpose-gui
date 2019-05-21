@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '..\design.ui'
+# Form implementation generated from reading ui file '.\design.ui'
 #
 # Created by: PyQt5 UI code generator 5.11.3
 #
@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(595, 208)
+        MainWindow.resize(605, 208)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.centralwidget)
@@ -67,27 +67,28 @@ class Ui_MainWindow(object):
         self.horizontalLayout_2.setStretch(1, 1)
         self.verticalLayout.addLayout(self.horizontalLayout_2)
         self.horizontalLayout = QtWidgets.QHBoxLayout()
+        self.horizontalLayout.setContentsMargins(-1, 24, -1, -1)
         self.horizontalLayout.setObjectName("horizontalLayout")
         spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout.addItem(spacerItem1)
+        self.cancel_button = QtWidgets.QPushButton(self.centralwidget)
+        self.cancel_button.setEnabled(False)
+        self.cancel_button.setCheckable(True)
+        self.cancel_button.setChecked(False)
+        self.cancel_button.setObjectName("cancel_button")
+        self.horizontalLayout.addWidget(self.cancel_button)
         self.ok_button = QtWidgets.QPushButton(self.centralwidget)
         self.ok_button.setObjectName("ok_button")
         self.horizontalLayout.addWidget(self.ok_button)
         spacerItem2 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout.addItem(spacerItem2)
         self.verticalLayout.addLayout(self.horizontalLayout)
-        spacerItem3 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        self.verticalLayout.addItem(spacerItem3)
-        self.verticalLayout.setStretch(3, 1)
         self.verticalLayout_2.addLayout(self.verticalLayout)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 595, 21))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 605, 21))
         self.menubar.setObjectName("menubar")
         MainWindow.setMenuBar(self.menubar)
-        self.statusbar = QtWidgets.QStatusBar(MainWindow)
-        self.statusbar.setObjectName("statusbar")
-        MainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -106,5 +107,6 @@ class Ui_MainWindow(object):
         self.model_combo_box.setItemText(1, _translate("MainWindow", "mobilenet_thin"))
         self.model_combo_box.setItemText(2, _translate("MainWindow", "mobilenet_v2_large"))
         self.model_combo_box.setItemText(3, _translate("MainWindow", "mobilenet_v2_small"))
+        self.cancel_button.setText(_translate("MainWindow", "Прервать"))
         self.ok_button.setText(_translate("MainWindow", "ОК"))
 

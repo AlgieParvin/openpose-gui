@@ -8,6 +8,9 @@ import numpy as np
 from tf_pose.estimator import TfPoseEstimator
 from tf_pose.networks import get_graph_path, model_wh
 
+from PyQt5.QtCore import QThread, pyqtSignal
+
+
 logger = logging.getLogger('TfPoseEstimator-Video')
 logger.setLevel(logging.DEBUG)
 ch = logging.StreamHandler()
@@ -50,7 +53,10 @@ def setup_parser():
     return parser
 
 
-class VideoProcesser(object):
+class VideoProcesserThread(QThread):
+
+    error_signal = pyqtSignal(Exception)
+
     def __init__(self, video_path, output_video, resolution='432x368', 
         model="mobilenet_thin", show_bg=True):
 
@@ -60,31 +66,39 @@ class VideoProcesser(object):
         self.model = model
         self.show_bg = show_bg
 
-    def run(self):
+        self.is_active = True
+
+    def __del__(self):
+        self.wait()
+
+    def __clear_thread(self):
+        self.__del__()
+
+    def __load_model(self):
+        if self.is_active:
+            self.__clear_thread()
+
         w, h = model_wh(self.resolution)
         try:
-            e = TfPoseEstimator(get_graph_path(self.model), target_size=(w, h))
+            return TfPoseEstimator(get_graph_path(self.model), target_size=(w, h))
         except Exception:
             raise ModelError("Не удалось загрузить модель: {}. Убедитесь, что модель находится в директории models/graph"\
                 .format(self.model))
 
+    def __open_video(self):
         try:
             cap = cv2.VideoCapture(self.video_path)
         except Exception:
             raise VideoInputError("Ошибка при чтении видеофайла: \"{}\"".format(self.video_path))
-
         if not cap.isOpened():
             raise VideoInputError("Ошибка при чтении видеофайла: \"{}\"".format(self.video_path))
+        return cap
 
-        width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-        height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        fps = cap.get(cv2.CAP_PROP_FPS)
-
+    def __open_video_writer(self):
         if self.output_video == '':
             raise VideoOutputError("Не предоставлено путь к файлу вывода")
-
         try:
-            output = cv2.VideoWriter(
+            return cv2.VideoWriter(
                 self.output_video, 
                 cv2.VideoWriter_fourcc(*'DIVX'),
                 fps,
@@ -93,22 +107,36 @@ class VideoProcesser(object):
         except Exception:
             raise VideoOutputError("Ошибка при создании файла вывода: {}".format(self.output_video))
 
-        while cap.isOpened():
-            ret_val, image = cap.read()
-            try:
-                humans = e.inference(image, resize_to_default=(w > 0 and h > 0), upsample_size=4.0)
-            except Exception:
-                break
+    def run(self):
+        try:
+            w, h = model_wh(self.resolution)
+            e = self.__load_model()
+            cap = self.__open_video()
 
-            if not self.show_bg:
-                image = np.zeros(image.shape)
-            image = TfPoseEstimator.draw_humans(image, humans, imgcopy=False)
+            width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+            height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+            fps = cap.get(cv2.CAP_PROP_FPS)
 
-            if self.output_video != '':
-                output.write(image)
+            output = self.__open_video_writer()
 
-        output.release()
-        cv2.destroyAllWindows()
+            while cap.isOpened():
+                ret_val, image = cap.read()
+                try:
+                    humans = e.inference(image, resize_to_default=(w > 0 and h > 0), upsample_size=4.0)
+                except Exception:
+                    break
+
+                if not self.show_bg:
+                    image = np.zeros(image.shape)
+                image = TfPoseEstimator.draw_humans(image, humans, imgcopy=False)
+
+                if self.output_video != '':
+                    output.write(image)
+
+            output.release()
+            cv2.destroyAllWindows()
+        except Exception as e:
+            VideoProcesserThread.error_signal.emit(e)
 
 
 if __name__ == '__main__':

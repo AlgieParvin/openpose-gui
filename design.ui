@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>613</width>
-    <height>256</height>
+    <width>632</width>
+    <height>318</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,7 +16,7 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_2">
     <item>
-     <layout class="QVBoxLayout" name="verticalLayout" stretch="1,0,0,0,1">
+     <layout class="QVBoxLayout" name="verticalLayout" stretch="1,0,0,0,0,0">
       <item>
        <layout class="QGridLayout" name="gridLayout" columnstretch="0,7,1,1,1">
         <item row="0" column="0">
@@ -149,6 +149,9 @@
       </item>
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_4">
+        <property name="bottomMargin">
+         <number>36</number>
+        </property>
         <item>
          <widget class="QLabel" name="label_4">
           <property name="text">
@@ -167,6 +170,19 @@
          </widget>
         </item>
        </layout>
+      </item>
+      <item>
+       <widget class="QProgressBar" name="progress_bar">
+        <property name="value">
+         <number>0</number>
+        </property>
+        <property name="textVisible">
+         <bool>false</bool>
+        </property>
+        <property name="format">
+         <string>%p%</string>
+        </property>
+       </widget>
       </item>
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,0,0">
@@ -233,7 +249,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>613</width>
+     <width>632</width>
      <height>21</height>
     </rect>
    </property>

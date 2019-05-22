@@ -10,6 +10,7 @@ class OpenposeApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
+        self.setFixedSize(632, 318)
         self.setWindowIcon(QtGui.QIcon("icon.png"))
 
         self.save_video_check_box.toggled.connect(self.on_toggle_save_video)
@@ -35,6 +36,8 @@ class OpenposeApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
 
     def on_done(self):
         self.cancel_button.setEnabled(False)
+        self.progress_bar.setValue(100)
+
         mbox = QtWidgets.QMessageBox()
         mbox.setIcon(QtWidgets.QMessageBox.Information)
         mbox.setWindowTitle('Openpose')
@@ -42,8 +45,12 @@ class OpenposeApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         mbox.setStandardButtons(QtWidgets.QMessageBox.Ok)
         mbox.show()
         mbox.exec_()
+        self.progress_bar.setValue(0)
 
     def on_error(self, e):
+        self.cancel_button.setEnabled(False)
+        self.progress_bar.setValue(0)
+
         mbox = QtWidgets.QMessageBox()
         mbox.setIcon(QtWidgets.QMessageBox.Critical)
         mbox.setWindowTitle('Openpose')
@@ -54,6 +61,8 @@ class OpenposeApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
 
     def on_interrupted(self):
         self.cancel_button.setEnabled(False)
+        self.progress_bar.setValue(0)
+
         mbox = QtWidgets.QMessageBox()
         mbox.setIcon(QtWidgets.QMessageBox.Warning)
         mbox.setWindowTitle('Openpose')
@@ -61,6 +70,9 @@ class OpenposeApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         mbox.setStandardButtons(QtWidgets.QMessageBox.Close)
         mbox.show()
         mbox.exec_()
+
+    def on_update_progress(self, value):
+        self.progress_bar.setValue(value)
 
     def cancel_processing(self):
         if self.process_thread:
@@ -101,6 +113,7 @@ class OpenposeApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         self.process_thread.error_signal.connect(self.on_error)
         self.process_thread.finish_signal.connect(self.on_done)
         self.process_thread.interrupted_signal.connect(self.on_interrupted)
+        self.process_thread.update_signal.connect(self.on_update_progress)
         self.process_thread.start()
 
         self.cancel_button.setEnabled(True)

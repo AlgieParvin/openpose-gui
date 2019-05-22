@@ -38,6 +38,7 @@ class VideoProcesserThread(QThread):
     error_signal = pyqtSignal(Exception)
     finish_signal = pyqtSignal()
     interrupted_signal = pyqtSignal()
+    update_signal = pyqtSignal(int)
 
     def __init__(self, video_path, output_csv, output_video=None, resolution='432x368',
         model="mobilenet_thin", show_bg=True):
@@ -93,6 +94,10 @@ class VideoProcesserThread(QThread):
         except Exception:
             raise VideoOutputError("Ошибка при создании файла вывода: {}".format(self.output_video))
 
+    def __update_progress(self, frames_total, current_frame):
+        percantage = int(float(current_frame) / float(frames_total) * 100)
+        self.update_signal.emit(percantage)
+
     def run(self):
         try:
             w, h = model_wh(self.resolution)
@@ -102,6 +107,8 @@ class VideoProcesserThread(QThread):
             width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
             height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
             fps = cap.get(cv2.CAP_PROP_FPS)
+            frames_total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+            current_frame = 0
 
             csv_file, csv_writer = self.__open_csv()
             video_output = self.__open_video_writer(width, height, fps) if self.output_video else None
@@ -124,6 +131,9 @@ class VideoProcesserThread(QThread):
 
                 if video_output:
                     video_output.write(image)
+
+                current_frame += 1
+                self.__update_progress(frames_total, current_frame)
 
             video_output.release()
             csv_file.close()

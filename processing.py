@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import csv
 
 from tf_pose.estimator import TfPoseEstimator
 from tf_pose.networks import get_graph_path, model_wh
@@ -27,17 +28,23 @@ class ProcessingInterruptedException(Exception):
         super().__init__(message)
 
 
+class WriteCSVException(Exception):
+    def __init__(self, message):
+        super(WriteCSVException, self).__init__(message)
+
+
 class VideoProcesserThread(QThread):
 
     error_signal = pyqtSignal(Exception)
     finish_signal = pyqtSignal()
     interrupted_signal = pyqtSignal()
 
-    def __init__(self, video_path, output_video, resolution='432x368', 
+    def __init__(self, video_path, output_csv, output_video=None, resolution='432x368',
         model="mobilenet_thin", show_bg=True):
 
         QThread.__init__(self)
         self.video_path = video_path
+        self.output_csv = output_csv
         self.output_video = output_video
         self.resolution = resolution
         self.model = model
@@ -52,8 +59,17 @@ class VideoProcesserThread(QThread):
         try:
             return TfPoseEstimator(get_graph_path(self.model), target_size=(w, h))
         except Exception:
-            raise ModelError("Не удалось загрузить модель: {}. Убедитесь, что модель находится в директории models/graph"\
+            raise ModelError(
+                "Не удалось загрузить модель: {}. Убедитесь, что модель находится в директории models/graph"
                 .format(self.model))
+
+    def __open_csv(self):
+        try:
+            file_to_save = open(self.output_csv, 'w')
+            writer = csv.writer(file_to_save)
+            return file_to_save, writer
+        except Exception:
+            raise WriteCSVException("Не удалось открыть файл csv для записи")
 
     def __open_video(self):
         try:
@@ -87,7 +103,8 @@ class VideoProcesserThread(QThread):
             height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
             fps = cap.get(cv2.CAP_PROP_FPS)
 
-            output = self.__open_video_writer(width, height, fps)
+            csv_file, csv_writer = self.__open_csv()
+            video_output = self.__open_video_writer(width, height, fps) if self.output_video else None
 
             while cap.isOpened():
                 if not self.is_active:
@@ -99,16 +116,20 @@ class VideoProcesserThread(QThread):
                 except Exception:
                     break
 
+                csv_writer.writerow([humans])
+
                 if not self.show_bg:
                     image = np.zeros(image.shape)
                 image = TfPoseEstimator.draw_humans(image, humans, imgcopy=False)
 
-                if self.output_video != '':
-                    output.write(image)
+                if video_output:
+                    video_output.write(image)
 
-            output.release()
+            video_output.release()
+            csv_file.close()
             cv2.destroyAllWindows()
             self.finish_signal.emit()
+
         except ProcessingInterruptedException:
             self.interrupted_signal.emit()
         except Exception as e:

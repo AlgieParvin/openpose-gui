@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>605</width>
-    <height>208</height>
+    <width>613</width>
+    <height>256</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,7 +16,7 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_2">
     <item>
-     <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0">
+     <layout class="QVBoxLayout" name="verticalLayout" stretch="1,0,0,0,1">
       <item>
        <layout class="QGridLayout" name="gridLayout" columnstretch="0,7,1,1,1">
         <item row="0" column="0">
@@ -27,7 +27,7 @@
          </widget>
         </item>
         <item row="1" column="4">
-         <widget class="QPushButton" name="output_button">
+         <widget class="QPushButton" name="csv_output_button">
           <property name="text">
            <string>Выбрать</string>
           </property>
@@ -36,12 +36,12 @@
         <item row="1" column="0">
          <widget class="QLabel" name="label_2">
           <property name="text">
-           <string>Сохранить как:</string>
+           <string>CSV для точек:</string>
           </property>
          </widget>
         </item>
         <item row="1" column="1" colspan="3">
-         <widget class="QLineEdit" name="output_line_edit">
+         <widget class="QLineEdit" name="csv_output_line_edit">
           <property name="styleSheet">
            <string notr="true">output_line_edit.setStyleSheet(&quot;QLineEdit { border-radius: 5px; }&quot;)</string>
           </property>
@@ -64,33 +64,13 @@
        </layout>
       </item>
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,1,0,0">
+       <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,0,0">
         <property name="topMargin">
-         <number>18</number>
+         <number>0</number>
         </property>
         <property name="bottomMargin">
-         <number>12</number>
+         <number>0</number>
         </property>
-        <item>
-         <widget class="QCheckBox" name="dark_bg_check_box">
-          <property name="text">
-           <string>Темный фон</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <spacer name="horizontalSpacer_3">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>40</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
         <item>
          <widget class="QLabel" name="label_3">
           <property name="text">
@@ -126,6 +106,64 @@
             <string>mobilenet_v2_small</string>
            </property>
           </item>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_3">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="0,0">
+        <property name="topMargin">
+         <number>24</number>
+        </property>
+        <item>
+         <widget class="QCheckBox" name="save_video_check_box">
+          <property name="text">
+           <string>Показать ключевые точки в видео</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="dark_bg_check_box">
+          <property name="text">
+           <string>Темный фон</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_4">
+        <item>
+         <widget class="QLabel" name="label_4">
+          <property name="text">
+           <string>Сохранить видео как:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="video_output_line_edit"/>
+        </item>
+        <item>
+         <widget class="QPushButton" name="video_output_button">
+          <property name="text">
+           <string>Выбрать</string>
+          </property>
          </widget>
         </item>
        </layout>
@@ -195,7 +233,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>605</width>
+     <width>613</width>
      <height>21</height>
     </rect>
    </property>
